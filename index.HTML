@@ -1,0 +1,116 @@
+<html>
+<head>
+<title> css style </title>
+<style>
+body{
+	margin:0;
+}
+h1{
+	font-size:3.5rem;
+}
+.header{
+	height:30%;
+	background-color:black;
+	color:#fff;
+	text-align:center;
+	padding:3rem;
+}
+
+
+.input{
+	height:2.5rem;
+	width:18rem;
+	padding: 5px;
+	font-size:1.5rem;
+	border-radius:5px;
+}
+.input:focus{
+	outline:none;
+}
+.inputbtn{
+	height:2.5rem;
+	width:10rem;
+	padding: 5px;
+	font-size:1.5rem;
+	border-radius:5px;
+	transition: 0.8s;
+}
+.inputbtn:focus{
+	outline:none;
+}
+
+.inputbtn:hover{
+	cursor:pointer;
+	background-color:#898998;
+}
+.city{
+	padding:3rem;
+	text-align:center;
+	height:30%;
+}
+</style>
+</head>
+<body> 
+<div class='header'>
+<h1>Weather App</h1>
+</div>
+<div class='city'>
+<input type = 'text' class="input" placeholder='Type your city name' autofocus>
+<button class = 'inputbtn'>Check</button>
+</div>
+<script>
+	let proxy = 'https://cors-anywhere.herokuapp.com/';
+	let loader = `
+	<div class='loader'>
+		<img src='giphy.gif'>
+	</div>`;
+	document.querySelector('.inputbtn').addEventListener('click', calculateWoeid);
+	document.addEventListener('keypress', function(e){
+		 if(e.charCode === 13 || e.which === 13){
+			
+			calculateWoeid();	
+		}
+	});
+	function calculateWoeid(){
+		let input = document.querySelector('.input').value;
+		let trimInput = input.trim();
+		if(trimInput !== ''){
+			document.querySelector('.input').value = '';
+			document.querySelector('h1').textContent = '';
+			document.querySelector('.header').insertAdjacentHTML('afterbegin', loader);
+			fetch(`${proxy}https://www.metaweather.com/api/location/search/?query=${trimInput}`)
+			.then(result => {
+				return result.json();
+			})
+			.then(obj => {
+				getWeather(obj[0].woeid);
+			})
+			.catch(error => {
+				//console.log(error);
+				document.querySelector('.loader').parentNode.removeChild(document.querySelector('.loader'));
+				document.querySelector('h1').textContent = 'No Match Found!';
+				document.querySelector('.input').value= '';
+				document.querySelector('.input').focus();
+			});
+		}
+	}
+	
+	function getWeather(woeid){
+		fetch(`${proxy}https://www.metaweather.com/api/location/${woeid}/`)
+		.then(result => {
+			return result.json();
+		})
+		.then(data =>{
+			let max_temp = data.consolidated_weather[0].max_temp;
+			let min_temp = data.consolidated_weather[0].min_temp;
+			document.querySelector('.loader').parentNode.removeChild(document.querySelector('.loader'));
+			document.querySelector('h1').textContent = `Today in ${data.title} the minimum temperature will be ${min_temp.toFixed(2)} and the maximum temperature will be ${max_temp.toFixed(2)}`;
+			document.querySelector('.input').focus();
+		})
+		.catch(error => {
+			console.log(error);
+		});
+	}
+</script>
+</body>
+</html>
